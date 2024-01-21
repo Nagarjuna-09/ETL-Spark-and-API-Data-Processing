@@ -124,8 +124,8 @@ object obj {
     nationality_notfound_customers.show()
     
     //Writing data to local disk
-    nationality_found_customers.write.format("parquet").mode("append").save("file:///C:/data_import/final_proj/nationality_detected")
-    nationality_notfound_customers.write.format("parquet").mode("append").save("file:///C:/data_import/final_proj/nationality_notdetected")
+    nationality_found_customers.write.format("parquet").mode("append").save("file:///C:/data_import/proj_results/nationality_detected")
+    nationality_notfound_customers.write.format("parquet").mode("append").save("file:///C:/data_import/proj_results/nationality_notdetected")
     
     
   }
