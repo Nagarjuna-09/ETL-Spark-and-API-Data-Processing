@@ -20,7 +20,7 @@ object obj {
     //required for writing the file from eclipse
     System.setProperty("hadoop.home.dir","D:\\hadoop")
     
-//Scala code for reading data from url
+//Scala code for reading data from url, data is read as string.
     val sslContext = SSLContext.getInstance("TLS")
 
     sslContext.init(null, Array(new X509TrustManager {
@@ -49,7 +49,7 @@ object obj {
     val spark = SparkSession.builder().getOrCreate()
     import spark.implicits._
     
-  //Converting url string to RDD
+  //Converting url string to RDD. parallelize() is used to convert the string into RDD
     
     val rdd = sc.parallelize(List(urlstring))
     
