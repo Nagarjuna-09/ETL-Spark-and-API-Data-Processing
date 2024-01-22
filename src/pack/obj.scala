@@ -94,6 +94,7 @@ object obj {
     //importing and converting data in local AVRO file to a data frame
     
     //one step conversion of the data imported in any format from anywhere to a data frame
+    // if reading csv, include .option("multiline",true) in the below command
     val avrodf = spark.read.format("avro").load("file:///C:/data_import/Sparkdata/projectsample.avro")
     
     println("======= local AVRO data's data frame =======") 
