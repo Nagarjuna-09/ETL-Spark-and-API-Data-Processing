@@ -1,0 +1,90 @@
+
+
+//Scala libraries for reading data from url not required
+
+
+
+
+
+//Spark libraries for transofrming the read data
+from pyspark import SparkConf
+from pyspark import SparkContext
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
+
+
+// code for ssl authentication in Python
+import urllib.request
+import ssl
+
+context = ssl.create_default_context() 
+context.check_hostname = False
+context.verify_mode = ssl.CERT_NONE
+url = "https://randomuser.me/api/0.8/?results=500"
+response = urllib.request.urlopen(url, context=context).read().decode('utf-8')
+urlstring = response
+print(urlstring)
+
+
+
+
+
+
+
+
+
+
+
+
+//Spark code required for transforming read data
+// conf is only provided during deployment, normal times conf is not required, so conf,sc and spark not required now
+conf = SparkConf().setAppName("first").setMaster("local[*]").set("spark.driver.allowMultipleContexts", "true")
+sc = new SparkContext(conf)
+spark = SparkSession.builder().getOrCreate()
+
+
+//Converting url string to RDD. parallelize() is used to convert the string into RDD
+rdd = sc.parallelize([urlstring])
+
+
+
+
+df = spark.read.json(rdd)
+
+df.show()
+df.printSchema()
+
+
+
+arrayflatten = df.withColumn("results",expr("explode(results)"))
+    
+arrayflatten.show()
+arrayflatten.printSchema()
+
+//python has indentation issues, so give them without spaces
+final_flatten = arrayflatten.select("nationality","results.user.cell","results.user.dob","results.user.email","results.user.gender","results.user.location.*","results.user.md5","results.user.name.*","results.user.password","results.user.phone","results.user.picture.*","results.user.registered","results.user.salt","results.user.sha1","results.user.sha256","results.user.username","seed","version")
+
+final_flatten.show(10)
+
+avrodf = spark.read.format("parquet").load("file:///home/cloudera/revdata/projectsample.parquet")
+
+avrodf.show()
+avrodf.printSchema()
+
+numericals_removed_df = final_flatten.withColumn("username", regexp_replace(col("username"), "([0-9])", ""))
+
+numericals_removed_df.show()
+
+leftjoin_df = avrodf.join(numericals_removed_df,["username"],"left")
+
+leftjoin_df.show()
+
+nationality_found_customers = leftjoin_df.filter("nationality is not null")
+nationality_found_customers.show()
+
+nationality_notfound_customers = leftjoin_df.filter("nationality is null")
+nationality_notfound_customers.show()
+
+nationality_found_customers.write.format("parquet").mode("append").save("/user/cloudera/nationality_detected")
+nationality_notfound_customers.write.format("parquet").mode("append").save("/user/cloudera/nationality_notdetected")
+    
